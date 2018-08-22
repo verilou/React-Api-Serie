@@ -1,44 +1,35 @@
-import { actions, reducer, signin, signout } from 'react-redux-oauth'
+import React from "react";
+import axios from 'axios';
  
 class connection extends React.Component {
-  componentWillMount () {
-    const { dispatch } = this.props
-    dispatch(actions.config({
-      client_id: '3355c0d4d0cd',
-      client_secret: 'bba891b0b7b8af28607115ac83a6eee4',
-      url: 'https://www.betaseries.com/authorize', // your oauth server root
-    }))
+  constructor(props){
+    super(props)
+
   }
-  async handlesignin (e) {
-    const { dispatch } = this.props
-    e.preventdefault()
-    await dispatch(actions.signin({
-      username: this.refs.username.value,
-      password: this.refs.password.value
-    }))
+  componentDidMount(){
+    var urlParam = new URL(window.location);
+    var getValue = new URLSearchParams(urlParam.search);
+    console.log(getValue.get("code"));
+
+    axios.post('https://api.betaseries.com/oauth/access_token', {
+        'client_id' : "3355c0d4d0cd",
+        'client_secret' : "bba891b0b7b8af28607115ac83a6eee4",
+        'redirect_uri' : "http://localhost:3000/Auth",
+        'code' : getValue.get("code"),
+    })
+    .then(function (response) {
+      console.log(response);
+      Cookies.set("token_user", response.data.access_token);
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
   }
-  render () {
-    const { oauth } = this.props
-    const Signin = signin({
-      popup: {},    // popup settings
-      success () {}, // invoke when signin success
-      failed () {}, // invoke when signin failed
-      cancel () {} // invoke when signin cancel
-    })(props => <button {...props} />)
-    const Signout = singout()(props => <button {...props} />)
+  render() {
     return (
-      <div>
-        <form onSubmit={this.handleSignin.bind(this)}>
-          <input type='text' name='username' ref='username' placeholder='username' />
-          <input type='text' name='password' ref='password' placeholder='password' />
-          <button type='submit' disabled={oauth.authenticating}>Signin</button>
-        </form>
-        <hr />
-        <Signin provider='github'>Signin</Signin>
-        <hr />
-        <Signout>Signout</Signout>
-      </div>
-    )
+      <p>hello</p>
+    );
   }
 }
 export default connection;
